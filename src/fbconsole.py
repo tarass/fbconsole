@@ -258,10 +258,18 @@ def _safe_url_load(*args, **kwargs):
 
 def _safe_json_load(*args, **kwargs):
     f = _safe_url_load(*args, **kwargs)
-    if six.PY3:
-        return json.loads(f.read().decode('utf-8'))
-    else:
-        return json.loads(f.read())
+    try:
+        if six.PY3:
+            return json.loads(f.read().decode('utf-8'))
+        else:
+            return json.loads(f.read()) 
+    except ValueError: #will retry once on json decoding
+        logging.exception("JSON decode error. Retrying")
+        f = _safe_url_load(*args, **kwargs)
+        if six.PY3:
+            return json.loads(f.read().decode('utf-8'))
+        else:
+            return json.loads(f.read())
 
 def help():
     """Print out some helpful information"""
