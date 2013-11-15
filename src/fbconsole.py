@@ -239,6 +239,9 @@ class ApiException(Exception):
 class UnknownApiException(ApiException):
     """Some unknown error."""
 
+class InternalApiException(ApiException):
+    """Some unknown error."""
+
 class OAuthException(ApiException):
     """Just an oath exception."""
 
@@ -266,6 +269,8 @@ def _handle_http_error(e):
         error = body.get('error')
         if error:
             return ApiException.from_json(error)
+        elif e.code == 500:
+            return InternalApiException(body.get('error_msg'), 'InternalError', body.get('error_code'))
     return e
 
 def _safe_url_load(*args, **kwargs):
